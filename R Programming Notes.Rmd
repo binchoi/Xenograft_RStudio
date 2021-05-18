@@ -1,0 +1,368 @@
+---
+title: "R Programming (Coursera)"
+output: html_notebook
+---
+
+Try executing this chunk by clicking the *Run* button within the chunk or by placing your cursor inside it and pressing *Ctrl+Shift+Enter*. 
+
+```{r}
+plot(cars)
+```
+
+## Vectors and Lists
+### Basic Idea
+```{r}
+x <- c(0.5, 0.6) # created a numerical vector of length 2
+# c => concatenate 
+x <- c(T, F)
+x <- c('a', 'b', 'c')
+x <- c(1i, 2i )
+```
+
+### Mixing Objects (coercion allows every element in the vector to be the same class)
+
+```{r}
+y <- c(1.4, 'a')
+y <- c(T, 1, 2)
+y <- c(T, "hello")
+```
+
+### Explicit Coercion
+```{r}
+
+x <- 0:6
+class(x)
+as.numeric(x)
+as.logical(x)
+as.character(x)
+
+```
+### Some times Coercion doesn't work
+```{r}
+x <- c('a', 'b', 'c')
+as.numeric(x)
+as.logical(x)
+```
+
+## Lists
+```{r}
+x <- list(1, "a", TRUE, 1 + 4i)
+x # indexed by double brackets
+```
+
+# Matrices - special type of vector in R (with dimension)
+```{r}
+m <- matrix(nrow = 2, ncol = 3)
+m
+dim(m) # dimension fst = row, snd = col
+
+attributes(m)
+```
+## Constructed column-wise (not row-wise)
+```{r}
+m <- matrix(1:6, nrow = 2, ncol = 3)
+m
+```
+# Create matrix differently
+```{r}
+m <- 1:10 
+m 
+dim(m) <- c(2,5) # assign the dimensions of the vector m => matrix m
+m
+```
+## CBIND and RBIND
+```{r}
+x <- 1:3
+y <- 10:12
+cbind(x,y) # each vector is a column
+rbind(x,y) # each vector is a row
+```
+# Factors (represent categorical data)
+```{r}
+x <- factor(c("yes", "no", "no", "yes", "yes"))
+x
+
+table(x) # frequency count
+
+unclass(x) # how they are represented by the R system
+
+```
+## Factors Order of levels
+```{r}
+x <- factor(c("yes", "yes", "yes", "no", "yes", "yes", "yes"))
+x # order of level is determined by alphabetical order (i.e. no is base level)
+
+# can specify with LEVELS
+x <- factor(c("yes", "yes", "yes", "no", "yes", "yes", "yes"), levels = c("yes", "no"))
+x
+```
+## Missing Values (NA or NaN)
+NaN is used for undefined mathematical operations and Na is used for everything else. 
+Na can also have class
+NaN is also a Na BUT reverse is not true
+```{r}
+x <- c(1,2,3,4,NA, 10)
+is.na(x)
+is.nan(x)
+x <- c(1,NaN,3,4,NA, 10)
+is.na(x)
+is.nan(x)
+```
+# Data Frame (to store tabular data)
+special type of list where every element of the list has to have the same len. 
+special attributes => row.names
+created => read.table() or read.csv()
+can be converted to matrix => data.matrix() (i.e. expect coercion)
+```{r}
+x <- data.frame(foo = 1:4, bar = c(T, T, F, F)) # each is a column 
+x
+ncol(x)
+nrow(x)
+
+```
+## Names 
+```{r}
+x <- 1:3
+names(x) # default is no name
+names(x) <- "foo" # only first elt has name
+x 
+names(x) <- c("foo", "bar", "norf") # each element has name
+x 
+names(x) # list names
+
+```
+
+```{r}
+x <- list(a = 1, b = 2, c = 3)
+x
+```
+
+```{r}
+m <- matrix(1:4, nrow = 2, ncol = 2)
+dimnames(m) <- list(c("a", "b"), c("c", "d")) # assign as list of 2 vectors: row names, col names
+m
+```
+
+# Reading in Large Datasets with read.table / read.csv
+* Make rough calc of memory required to store data. If dataset is greater than the amount of RAM available, stop! (# of elements x 8 bytes/numeric => divide by 2^20 bytes/MB => multiply by two to account for overhead required)
+* set comment.char = "" if no commented lines exist in code (makes it faster!)
+* use the colClasses argument (to make more efficient) - read first couple rows and define it for whole dataset
+```{r}
+#initial <- read.table("some_data-base.txt", comment.char = "", nrows = 100) # read 100 lines
+#classes <- sapply(initial, class) # determine classes of each coloumn
+#tabAll <- read.table("some_data-base.txt", comment.char = "", nrows = 100, colClasses = classes)
+```
+* set nrows (can overestimate)
+
+
+
+# Textual Data Formats (which contain more metadata)
+* ``dumping`` and ``dputing`` are useful b/c they preserve the metadata
+
+```{r}
+y <- data.frame(a = 1, b = "a") # coloumn name included
+
+dput(y) # metadata included
+dput(y, file = "y.R") # make file that allows us to  re-construct the object
+new.y <- dget("y.R")
+new.y
+
+```
+
+Multiple objects can be deparsed using the dump function and read back in using source
+```{r}
+x <- "foo"
+y <- data.frame(a = 1, b = "a") 
+dump(c("x", "y"), file = "data.R") # arg -> names of the objects we want to store and the file name in which they should be stored
+rm(x,y) # remove them
+source("data.R")
+y 
+x
+```
+
+# Interfaces to the Outside World 
+* ``file`` open connection to a file
+* ``gzfile`` open connection to a gzip compressed file
+* ``bzfile`` open connection to a bzip2 compressed file
+* ``url`` open connection to a webpage
+
+```{r}
+con <- file("y.R", "r")
+#data <- read.csv(con)
+close(con)
+```
+
+
+```{r}
+#con <- gzfile("somefile.gz", "r")
+x <- readLines(con, 10) # read 10 lines
+x
+close(con)
+
+```
+
+```{r}
+con <- url("http://www.jhsph.edu", "r")
+x <- readLines(con, 10)
+head(x)
+```
+
+
+
+
+# SUBSETTING
+[ always returns object of same class as original (e.g. subset a list with [] -> list) -> can be used to select more than one element (one exception case, however)
+
+[[ used to extract elts of a list or data frame, can only be used to extract a single element and the class of the returned object will not necc. be a list or a df
+
+$ used to extract elements of a list or df BY NAME; semantics are similiar to that of [[
+
+```{r}
+x <- c("a", "b", "c", "d") # character vector
+x[1] # returns a character vector
+x[2] # returns a character vector
+x[1:4] # returns a character vector (using numeric index)
+x[x>"a"] # filtering for letters that are greater than 'a'
+u <- x > "a" # logical vector u that tells us which elts of x are greater than 'a'
+u
+x[u]
+```
+
+
+## Subsetting Lists
+```{r}
+x <- list(foo = 1:4, bar = 0.5) # list consisting of two names elements ... whose value is ...
+x[1] # returns a list  (same class as original)
+x[[1]] # a sequence
+x$bar # returns element associated with name bar
+x[["bar"]] # same operation as above
+x["bar"] # returns list
+
+
+# to subset multiple elements of a list...
+x <- list(foo = 1:4, bar = 0.3, baz = "hello")
+x[c(1,3)]
+```
+
+```{r}
+x <- list(foo = 1:4, bar = 0.3, baz = "hello")
+name <- "foo"
+x[[name]] # computed index for 'foo' - finds elt associated with 'foo' not 'name'
+x$name # dollar sign is weaker as it literally searches for elt associated with 'name'
+x$foo # this is correct use of $
+```
+
+Subsetting Nested Elements of a List
+```{r}
+# [[ can take an integer sequence (nested/repeated subsetting)
+x <- list(a = list(10, 12, 14), b = c(3.21, 2.32))
+x[[c(1,3)]] # same as double subsetting
+x[[1]][[3]] # equivalent to above
+x[[c(2,1)]]
+
+```
+
+## Subsetting Matrices
+```{r}
+x <- matrix(1:6, 2, 3)
+x
+x[1,2]
+x[2,1]
+```
+```{r}
+x[1,] # first row
+x[,2] # second col
+```
+
+```{r}
+x <- matrix(1:6, 2, 3)
+x[1,2] # default behavior is to return a vector of length 1, instead of 1x1 matrix
+
+x[1,2,drop = FALSE] # don't DROP the dimension => returns 1x1 matrix
+
+```
+
+```{r}
+x <- matrix(1:6, 2, 3)
+x[1,] # again, drop = TRUE as default and dimensions are dropped => vector returned
+x[1, , drop = FALSE] 
+
+```
+
+## Subsetting - Partial Matching
+partial matching of names is allowed with [[ and $.
+```{r}
+x <- list(aardvark = 1:5)
+x$a # as only name that starts with a is aardvark, R understands this and runs x$aardvark
+x[["a"]] # by default, partial matching is turned off with [[
+x[["a", exact = FALSE]] # specify exact as FALSE, it gives what we want as the aardvark element is what matches the closest
+```
+
+# Removing NA Values
+Common Operation - many missing values 
+key: Create logical vector that tells us where the NAs are such that we can remove them by subsetting
+```{r}
+x <- c(1,2,3,4,5,NA, 4,4,5,6,NA, 299, 21)
+bad <- is.na(x)
+bad # false => not NA, true => NA (i.e. BAD Data)
+x[!bad] # ! => called bang operator (i.e. bang bad => good) similar to not
+```
+When considering multiple objects at once
+```{r}
+x <- c(1,2,3,4,5,NA, 4,4,5,6,NA, 299, 21)
+y <- c('a','ac','s','s',' ', NA, 'a', 'bc', 'e', 'q',NA, 299, '21') # note the coercion
+good <- complete.cases(x,y) # use on both vectors => which positions/indices contain non-NA values for both objects/vectors
+good
+
+x[good]
+y[good]
+```
+
+```{r} 
+airquality[1:6, ] # some missing values... we only want rows in df where all values are present (non-missing)
+good <- complete.cases(airquality) # logical vector which tells us which rows are complete
+head(good)
+
+airquality[good, ][1:6, ] # of the good rows, show the first 6 and all cols
+```
+
+# Vectorized Operations
+Benefit for command line use 
+More efficient, concise, and easier to read
+```{r}
+x <- 1:4; y <-6:9
+# to add the two vectors... (add in parellel) no need to loop! simply...
+x + y
+# Logical vectors
+x>2 # compares all the numbers... 
+x>=2
+y==8 # equality
+x*y
+x/y
+```
+Similarly, in matrices...
+```{r}
+x <- matrix(1:4, 2,2) ; y <- matrix(rep(10,4), 2,2) # rep => 10, 10, 10, 10
+# ELEMENT-WISE MULTIPLICATION
+x*y
+x/y
+# TRUE MATRIX MULTIPLICATION
+x %*% y
+
+```
+
+## Practice Questions
+```{r}
+hw1_data <- read.csv("~/Xenograft_RStudio/hw1_data.csv")
+#View(hw1_data)
+bad <- is.na(hw1_data[,1])
+mean(hw1_data[,1][!bad])
+
+ourfilter <-   hw1_data$Ozone>31 & hw1_data$Temp>90 & complete.cases(hw1_data$Ozone, hw1_data$Temp)
+mean(hw1_data[,2][ourfilter])
+
+mean(hw1_data$Temp[hw1_data$Month==6])
+
+max(hw1_data$Ozone[!is.na(hw1_data$Ozone)][hw1_data$Month==5])
+```
+
