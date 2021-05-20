@@ -366,3 +366,830 @@ mean(hw1_data$Temp[hw1_data$Month==6])
 max(hw1_data$Ozone[!is.na(hw1_data$Ozone)][hw1_data$Month==5])
 ```
 
+# Notes from SWIRL
+| Now, let's create a small collection of numbers called a vector. Any object that contains data is called
+| a data structure and numeric vectors are the simplest type of data structure in R. In fact, even a single
+| number is considered a vector of length one.
+| The easiest way to create a vector is with the c() function, which stands for 'concatenate' or 'combine'.
+| To create a vector containing the numbers 1.1, 9, and 3.14, type c(1.1, 9, 3.14).
+| Type z to view its contents. Notice that there are no commas separating the values in the output.
+
+
+| When we did z * 2 + 100 in our earlier example, z was a vector of length 3, but technically 2 and 100 are
+| each vectors of length 1.
+| Behind the scenes, R is 'recycling' the 2 to make a vector of 2s and the 100 to make a vector of 100s. In
+| other words, when you ask R to compute z * 2 + 100, what it really computes is this: z * c(2, 2, 2) +
+| c(100, 100, 100).
+
+| Vectors come in two different flavors: atomic vectors and lists. An atomic vector contains exactly one data type, whereas a list may contain multiple data types. We'll explore atomic vectors further before we get to
+| lists.
+
+
+| Index vectors come in four different flavors -- logical vectors, vectors of positive integers, vectors of negative integers, and vectors of character strings -- each of which we'll cover in this lesson.
+
+| Many programming languages use what's called 'zero-based indexing', which means that the first element of a vector is considered element 0. R uses 'one-based indexing', which (you guessed it!) means the first element of a
+| vector is considered element 1.
+
+| The main difference, as you'll see, is that matrices can only contain a single class of data, while data frames can consist of many different classes of data. (kind of like vectors vs lists)
+| The example that we've used so far was meant to illustrate the point that a matrix is simply an atomic vector with a dimension attribute. A more direct method of creating the same matrix uses the matrix() function.
+| This is called 'implicit coercion', because we didn't ask for it. It just happened. But why didn't R just convert the names of our patients to numbers? I'll let you ponder that question on your own.
+
+
+
+# Week 2 - Control Structures
+* if, else: testing a condition
+* for: execute a loop a fixed number of times
+* while: execute a look while condition is true
+* repeat: execute infinite loop
+* break: break the execution of loop
+* next: skip an iteration of a loop (i.e. continue in python)
+* return: exit a function
+
+## If-else
+Else branch is optional (i.e. if(){} if(){} is possible)
+```{r}
+x <-4
+
+if(x>3){
+    y <- 10
+} else {
+    y <- 0
+}
+
+# or same process 
+
+y <- if(x>3){
+    10
+} else {
+    0
+}
+```
+
+## For-loop
+```{r}
+for(i in 1:10){
+    print(i)
+}
+
+x<-c('a', 'b', 'c', 'd')
+for(i in 1:4){
+    print(x[i]) # prints the i-th element of vector x
+}
+
+# using seq_along, we don't need to know the length of x
+for(i in seq_along(x)){
+    print(x[i])
+}
+
+for(letter in x){
+    print(letter)
+}
+
+for(i in 1:4) print(x[i]) # if one line, can omit the curly brackets => not best practice
+
+
+```
+Nested for-loops
+```{r}
+x<-matrix(1:6,2,3)
+for(i in seq_len(nrow(x))){ # seq_len produces sequence based on length -> i.e. based on number of rows -> 1:2
+    for(j in seq_len(ncol(x))){
+        print(x[i,j]) # print every element of the matrix (row priority/order)
+    }
+}
+```
+Be careful with repeated nesting - complex != good (but simple = good)
+
+## While-loop
+```{r}
+
+count <- 0
+while(count<10){
+    print(count)
+    count <- count + 1
+}
+```
+Be careful to ensure it doesn't become an infinite loop 
+
+```{r}
+z <- 5
+while (z>=3 && z<=10){
+    print(z)
+    coin <- rbinom(1,1,0.5)
+    
+    if(coin ==1){
+        z <- z+1
+    } else {
+        z <- z-1
+    }
+}
+```
+Conditions are always evaluated from left to right (when given multiple condition operations)
+
+## Repeat, Next, Break
+Repeat - requires break
+```{r}
+x0 <- 1
+tol <- 1e-8
+
+#repeat {
+#  x1<- computeEstimate()
+#  
+#  if(abs(x1-x0)<tol){
+#    break
+#  } else {
+#    x0 <- x1
+#  }
+#}
+```
+Not the best idea - dangerous. 
+
+## next, return
+```{r}
+for(i in 1:10){ # this loop does nothing
+  if(i<=20){
+    next
+  }
+}
+```
+
+Generally speaking, infinite loops are not reccomended even if they are theoretically correct
+
+
+## Simple R Functions
+```{r}
+add2 <- function(x,y){
+    x+y
+}
+
+above10 <- function(x){
+    use <- x>10 # logical vector
+    x[use]
+}
+
+above <- function(x, n =10){ # default to 10
+    use <- x>n # logical vector
+    x[use]
+}
+```
+
+```{r}
+# mean of each column
+
+columnmean_error <- function(y){
+    nc <- ncol(y)
+    means <- numeric(nc) # numeric vector of length nc - initialized as all 0s
+    for(i in 1:nc){
+        means[i] <- mean(y[,i])
+    }
+    means
+}
+
+columnmean <- function(y, removeNA = TRUE){
+    nc <- ncol(y)
+    means <- numeric(nc) # numeric vector of length nc - initialized as all 0s
+    for(i in 1:nc){
+        means[i] <- mean(y[,i], na.rm = removeNA)
+    }
+    means
+}
+
+columnmean_error(airquality)
+columnmean(airquality)
+columnmean(airquality, FALSE)
+```
+
+
+# Functions
+functions in R are "first class objects" => treated much like any other R object (i.e. functions can be passed as arg for other functions)
+
+* formal arguments => included in function definition
+* the ``formals`` returns list of all formal arguments
+```{r}
+mydata = rnorm(100)
+sd(mydata)
+sd(x = mydata) # arg is named
+sd(x=mydata, na.rm=FALSE)
+sd(na.rm=FALSE, x=mydata)
+sd(na.rm=FALSE, mydata) # if unnamed -> follow order
+```
+arg matching
+```{r}
+args(lm)
+#lm(data = mydata, y-x, model = FALSE, 1:100) # confusing but works (not recommended)
+#lm(y-x, mydata, 1:100, model = FALSE)
+```
+
+R thought process: absolute match, partial match, positional match of arguments
+
+
+Lazy Evaluation
+```{r}
+f <- function(a,b){
+  a^2
+}
+f(2) # No error produced because b isn't used anyways - 2 gets positionally matched to a
+```
+
+```{r}
+f <- function(a,b){
+  print(a)
+  print(b)
+}
+f(45) # execute until error!
+```
+
+
+``...`` indicate a variable number of args that are usually passed on to other functions
+```{r}
+myplot <- function(x,y,type="l", ...){
+  plot(x,y,type = type, ...)
+}
+
+# Generic functions
+mean
+
+# unknown number of arguments 
+args(paste)
+args(cat)
+```
+When using ``...``, any arg appearing after ... must be named explicity (no partial matching)!
+
+
+# Scoping Rules 
+## Symbol Binding
+when R tries to bind a value (e.g. my function, etc..) to a symbol (e.g. lm, mean, etc...), it searches through a series of environments to find the appropriate value. First, search: 
+1. Search the Global Environment
+2. Search the namespace of each packages on the search list
+```{r}
+search()
+```
+When user loads package with ``library``, the namespace of that package gets put in position two of the search list.
+
+### SCOPING RULES
+LEXICAL/STATIC SCOPING and DYNAMIC SCOPING
+
+```{r}
+f <- function(x,y){
+  x^2 + y/z    # z => free variable
+}
+```
+
+how do we assign a value to a free variable? SCOPING RULES
+
+## Lexical Scoping in R: the values of free variables are searched for in the environment in which the function was defined (continue search in parent env) 
+
+
+environment: a collection of (symbol, value) pairs (e.g. x is symbol, 3.14 is value)
+* every environment has parent environment (multiple children is possible)
+* a function + an environment = a closure or function closure
+
+
+## Lexical Scoping - R
+* Typically a function is defined in the global environment
+
+In R, the free variable bindings are resolve by first looking in the environment in which the function was created.
+
+```{r}
+make.power <- function(n){
+  pow <- function(x){ # function defined within a function. 
+    x^n
+  }
+  pow
+}
+
+cube <- make.power(3) # pow is lacking its argument (n is defined as 3) => function cube 
+square <- make.power(2)
+
+# How do you know what's in a fxn's environment? 
+ls(environment(cube)) # to look at environment in which a function is defined. 
+# in the environment there is an object called "n" and "pow"
+get("n", environment(cube)) # what's the value of "n" in the environment of cube (this fxn)
+
+ls(environment(square))
+get("n", environment(square))
+```
+
+Lexical vs. Dynamic Scoping
+```{r}
+y <- 10
+
+f <- function(x){
+    y<-2
+    y^2 + g(x)
+}
+
+g <- function(x){ 
+    x*y}
+
+#what is the value of 
+f(3)
+# lexical -> value of y in g is 10 (searched in calling environment / environment where function is called)
+# dynamic -> y in g is 2
+
+```
+
+
+```{r}
+g <- function(x){
+  a<- 3
+  x+a+y
+}
+
+g(2)
+
+y <-3
+g(2)
+```
+Lexical Scoping is supported in: 
+* Scheme
+* Perl
+* Python
+* Common Lisp (all languages converge to Lisp)
+
+### Consequences of Lexical Scoping 
+* In R, all objects must be stored in memory 
+* All functions must carry a pointer to their defining environment, which could be anywhere
+* In S-PLUS, free variables are always looked up in the global workspace
+
+parent frame => environment in which a function was called
+
+
+Why does this all matter? 
+## Optimization
+Easier to write cleaner, more organized code in solving optimization problems. 
+```{r}
+# write a constructor function
+make.NegLogLik <- function(data, fixed=c(FALSE, FALSE)){ 
+    params <- fixed
+    function(p) {
+        params[!fixed] <- p 
+        mu <-params[1]
+        sigma <- params[2]
+        a <- -0.5*length(data)*log(2*pi*sigma^2)
+        b <- -0.5*sum((data-mu)^2) / (sigma^2)
+        -(a+b)
+    }
+}
+
+set.seed(1); normals <- rnorm(100,1,2)
+nLL <- make.NegLogLik(normals)
+nLL
+ls(environment(nLL))
+#get("data", environment(nLL))
+
+optim(c(mu=0,sigma=1), nLL)$par
+
+
+#fixing sigma = 2
+nLL <- make.NegLogLik(normals, c(FALSE,2))
+optimize(nLL, c(-1,-3))$minimum
+
+#fixing mu = 1
+nLL <- make.NegLogLik(normals, c(1,FALSE))
+optimize(nLL, c(1e-6,10))$minimum
+
+```
+```{r}
+nLL <- make.NegLogLik(normals, c(1,FALSE))
+x <- seq(1.7, 1.9, len =100)
+y <- sapply(x,nLL)
+plot(x, exp(-(y-min(y))), type='l')
+
+nLL <- make.NegLogLik(normals, c(FALSE, 2))
+x <- seq(0.5, 1.5, len =100)
+y <- sapply(x,nLL)
+plot(x, exp(-(y-min(y))), type='l')
+```
+
+# Coding Standards
+
+1. use text editor/files (ASCII text)
+2. Indent your code
+3. Limit the width of your code (80 columns?)
+4. Limit the length of individual functions (one purpose/function)
+
+
+## Dates and Times in R
+* Dates are represented by ``Date`` class
+* Times by ``POSIXct`` and ``POSIXlt``
+
+``weekdays``
+```{r}
+x <- as.Date("1970-01-01")
+x
+unclass(x) # days since 1970-01-01 is how its stored internally
+
+```
+```{r}
+x <- Sys.time()
+x
+p <- as.POSIXlt(x)
+names(unclass(p))
+p$sec
+```
+```{r}
+datestring <- c("January 10, 2012 10:40", "December 9, 2011 9:10")
+x <- strptime(datestring, "%B %d, %Y %H:%M")
+x
+
+class(x)
+
+x <- as.Date("2012-01-01")
+y <- strptime("9 Jan 2011, 10:40:29", "%d %b %Y %H:%M:%S")
+#-y gives error
+x <- as.POSIXlt(x)
+x-y
+
+```
+
+```{r}
+x <- as.Date("2012-03-01")
+y <- as.Date("2012-02-28")
+x -y
+x <- as.POSIXct("2012-10-25 01:00:00")
+y <- as.POSIXct("2012-10-25 06:00:00", tz = "GMT")
+y-x
+```
+
+
+# Loop Functions
+##lapply
+arg) a list, a function (or name of it), other arguments via its .. argument
+
+```{r}
+(lapply)
+```
+```{r}
+# x is a list of two vectors/elements
+x <- list(a=1:5, b = rnorm(10)) # what goes in may/may not be a list => output is always a list
+lapply(x, mean)
+```
+
+```{r}
+x <- list(a = 1:4, b = rnorm(10), c = rnorm(20,1), d = rnorm(100, 5))
+lapply(x, mean) # apply mean on every element of the list
+```
+
+```{r}
+x <- 1:4
+lapply(x, runif) # runif => random uniform generator 
+
+lapply(x, runif, min = 0, max = 10)
+```
+
+lapply and friends make heavy use of anonymous functions 
+```{r}
+x <- list(a = matrix(1:4, 2,2), b = matrix(1:6, 3,2))
+
+lapply(x, function(elt) elt[,1]) # get first column of a and b
+```
+``sapply``: simplifies result of lapply. 
+* if result is a list where every element is length 1 => return vector
+* if result is a list where every element has same length => return matrix
+* else, function the same way as lapply (i.e. return a list)
+```{r}
+x <- list(a = 1:4, b = rnorm(10), c = rnorm(20,1), d = rnorm(100, 5))
+sapply(x, mean)
+```
+
+## apply
+* used to apply a function to the rows or columns of a matrix
+* it can be used with general arrays
+* it is not really faster than writing a loop (but it works in one line)
+
+```{r}
+str(apply) # ... are args that our function may require
+
+x <- matrix(rnorm(200), 20, 10)
+apply(x, 2, mean) # keep 2nd dimension and collapse the 1st dimension (rows) - preserve col, collapse the rows
+print("Or...")
+apply(x, 1, mean) # preserve the rows and collapse the col (i.e. 2nd dimension)
+
+```
+These following are optimized
+* ``rowSums``
+* ``rowMeans``
+* ``colSums``
+* ``colMeans``
+These are much faster
+
+```{r}
+x <- matrix(rnorm(200), 20, 10)
+apply(x, 1, quantile, probs = c(0.25,0.75)) # for each row, the quantiles are computed and displayed
+```
+
+```{r}
+a <- array(rnorm(2*2*10), c(2,2,10))# average of the two by two matrices
+apply(a, c(1,2), mean) # preserve the 1st and 2nd dimension (row/col) and collapse the 3rd dimension using the function
+rowMeans(a, dims = 2) # alternatively, dims = 2 does the same trick
+```
+
+## mapply
+* multivariate apply of sorts which applies a function in parellel over a set of arguments
+```{r}
+str(mapply)
+```
+... => arguments to apply over (objects)
+```{r}
+list(rep(1,4), rep(2,3), rep(3,2), rep(4,1))
+
+# instead we can do 
+mapply(rep, 1:4, 4:1)
+
+```
+Instant Vectorization
+```{r}
+noise <- function(n, mean, sd) {
+  rnorm(n, mean, sd)
+}
+noise(5,1,2)
+
+mapply(noise, 1:5, 1:5, 2)
+# same as...
+list(noise(1,1,2), noise(2,2,2), noise(3,3,2), noise(4,4,2), noise(5,5,2))
+```
+
+
+## tapply
+apply a function over subsets of a vector 
+```{r}
+str(tapply) 
+```
+INDEX: factor or a list of factors (or else they are coerced to factors)
+```{r}
+x <- c(rnorm(10), runif(10), rnorm(10,1))
+factor <- gl(3, 10)
+factor
+
+tapply(x,factor,mean)
+tapply(x,factor,mean, simplify = FALSE)
+tapply(x, factor, range)
+
+```
+## Split
+* the first step of tapply => function that takes vector or other objects and splits it into groups determined by a factor or a list of factors
+```{r}
+str(split)
+```
+```{r}
+x <- c(rnorm(10), runif(10), rnorm(10,1))
+factor <- gl(3, 10)
+split(x, factor)
+```
+
+```{r}
+sapply(split(x, factor), mean)
+tapply(x, factor, mean)
+```
+```{r}
+library(datasets)
+head(airquality)
+```
+
+```{r}
+# mean within each month
+s <- split(airquality, airquality$Month)
+lapply(s, function(x) colMeans(x[, c("Ozone", "Solar.R", "Wind")]))
+```
+
+```{r}
+sapply(s, function(x) colMeans(x[, c("Ozone", "Solar.R", "Wind")]))
+sapply(s, function(x) colMeans(x[, c("Ozone", "Solar.R", "Wind")], na.rm = TRUE))
+
+```
+Splitting on More than one level
+```{r}
+x <- rnorm(10)
+f1 <- gl(2,5)
+f2 <- gl(5,2)
+f1
+f2
+interaction(f1,f2)
+```
+
+```{r}
+str(split(x, list(f1,f2))) # interaction function is implicitly called
+# some levels are empty... 
+
+str(split(x, list(f1,f2), drop = TRUE)) 
+```
+
+
+# Debugging
+## Questions to ask: 
+* What was your input? How did you call the function? 
+* What were you expecting? Output, messages, other results? 
+* What did you get? 
+* How does what you get differ from what you were expecting? 
+* Were your expectations correct in the first place? 
+* Can you reproduce the problem (exactly)? 
+
+
+## Basic Tools for Debugging 
+* ``traceback``: prints out the function call stack after an error occurs. 
+* ``debug``: flags a function for 'debug' mode which allows you to step through execution of a function one line at a time
+* ``browser``: similar to debug fxn. suspends the execution of a function wherever it is called
+* ``trace``: allows you to insert debugging code into a function a specific places
+* ``recover``: allows you to modify the error behavior s.t. you can browse the function call stack
+
+
+## Traceback 
+```{r}
+mean(u)
+traceback() # only immediately afterwards
+```
+```{r}
+lm(u ~ o)
+traceback()
+```
+```{r}
+debug(lm)
+lm(u~o)
+# press n and enter in the console
+```
+
+## recover
+```{r}
+options(error = recover)
+read.csv("filethatdoesn'texist") # select number to look at the environment 
+```
+
+| Try vapply(flags, unique, numeric(1)), which says that you expect each element of the result to be a numeric vector of
+| length 1. Since this is NOT actually the case, YOU WILL GET AN ERROR. Once you get the error, type ok() to continue to the
+| next question.
+| Use tapply(flags$animate,
+| flags$landmass, mean) to apply the mean function to the 'animate' variable separately for each of the six landmass groups,
+| thus giving us the proportion of flags containing an animate image WITHIN each landmass group.
+
+
+
+# Str Function
+* a diagnostic functoin and an alternative to 'summary'
+* suited to compactly display the contents of possibly nested lists
+* what's in this object? 
+
+```{r}
+str(str)
+```
+
+```{r}
+str(lm)
+str(ls)
+```
+
+```{r}
+x <- rnorm(100, 2, 4)
+summary(x)
+str(x)
+
+f <- gl(40, 10)
+str(f)
+summary(f)
+```
+
+```{r}
+str(airquality)
+```
+Good for quick examination
+```{r}
+m <- matrix(rnorm(100), 10, 10)
+str(m) # first columns
+m[,1]
+```
+
+for lists...
+```{r}
+s <- split(airquality, airquality$Month)
+str(s)
+```
+
+# Simulations
+* rnorm: generate random normal variates within given mean and sd
+* dnorm: evaluate the normal probability density at a point
+* pnorm: evaluate the cumulative distribution functin for a normal distribution
+* rpois: generate random Poisson variates with a given rate
+
+Probability Distribution functions. PREFIXES are..
+* d for density
+* r for random number generation* p for cumulative distribution
+* q for quantile function
+```{r}
+str(dnorm)
+str(qnorm)
+str(pnorm)
+str(rnorm)
+```
+lower.tail = FALSE => upper.tail
+
+if $\phi$ is the cumulative distribution dunction for a standard Normal Distribution, then pnorm(q) = $\phi(q)$ and qnorm(p) = $\phi^{-1}(p)$.
+
+```{r}
+x <- rnorm(10)
+x
+x <- rnorm(10, 20, 2)
+```
+
+Set the seed!
+```{r}
+set.seed(1)
+rnorm(5)
+rnorm(5)
+set.seed(1)
+rnorm(10)
+```
+
+```{r}
+rpois(10,1) # 10 random generated with rate = 1
+ppois(2,2) # Pr(x <=2)
+ppois(4,2)
+
+```
+
+
+## Simulate a Linear Model 
+```{r}
+set.seed(2)
+x <- rnorm(100) 
+e <- rnorm(100, 0, 2)
+y <- 0.5 + 2 * x + e
+summary(y)
+plot(x,y)
+```
+```{r}
+set.seed(10)
+x <- rbinom(100, 1, 0.5) 
+e <- rnorm(100, 0, 2)
+y <- 0.5 + 2 * x + e
+summary(y)
+plot(x,y)
+```
+ 
+```{r}
+set.seed(1)
+x <- rnorm(100) 
+log.mu <- 0.5 + 0.3*x
+y <- rpois(100, exp(log.mu))
+summary(y)
+plot(x,y)
+```
+
+## Sample Function
+draws randomly from a specified set of scalar objects allowing you to sample from arb. distributions
+```{r}
+set.seed(1)
+sample(1:10, 4)
+sample(1:10, 4)
+sample(letters, 5)
+sample(1:10) ## Permutation
+sample(1:10) ## Permutation
+sample(1:10, replace = TRUE)
+```
+
+
+# R Profiler
+"Premature optimization is the root of all evil
+- Design FIRST, then OPTIMIZE"
+
+```{r}
+system.time(readLines("http://www.jhsph.edu"))
+```
+```{r}
+hilbert <- function(n) { 
+  i <- 1:n
+  1/outer(i -1, i, "+")}
+
+x <- hilbert(1000) 
+system.time(svd(x))
+```
+
+
+| For categorical variables (called 'factor' variables in R), summary() displays the number of times each value (or 'level')
+| occurs in the data. For example, each value of Scientific_Name only appears once, since it is unique to a specific plant. In
+| contrast, the summary for Duration (also a factor variable) tells us that our dataset contains 3031 Perennial plants, 682
+| Annual plants, etc.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
