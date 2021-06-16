@@ -5,18 +5,28 @@ output: html_notebook
 
 
 ```{r}
-sim1_expected <- read.csv("~/Xenograft_RStudio/sim1_expected_gene_id_count.csv")
-sim1_observed <- read.csv("~/Xenograft_RStudio/sim1_observed_gene_id_count.csv")
+sim1_expected <- read.csv("~/Xenograft_RStudio/Xenome_Simulations/sim1/sim1_expected_gene_id_count.csv")
+sim1_observed <- read.csv("~/Xenograft_RStudio//Xenome_Simulations/sim1/sim1_observed_gene_id_count.csv")
 sim1_exp_obs <- merge(sim1_expected, sim1_observed, by = "gene_id", all.x = T)
 # R as observed, G as expected
-sim1_exp_obs$baseMean <- (0.5)* log2(sim1_exp_obs$expected_count * sim1_exp_obs$count) # A
-sim1_exp_obs$log2FoldChange <- log2(sim1_exp_obs$expected_count / sim1_exp_obs$count) # M
-range(sim1_exp_obs$baseMean)
+
+colnames(sim1_exp_obs) <- c("gene_id", "expected_count", "observed_count")
+
+sim1_exp_obs$baseMean <- (0.5)* log2(sim1_exp_obs$observed_count * sim1_exp_obs$expected_count) # A
+sim1_exp_obs$log2FoldChange <- log2(sim1_exp_obs$observed_count / sim1_exp_obs$expected_count) # M - observed/expected-simulated (theoretical)
+
+write.csv(sim1_exp_obs, "~/Xenograft_RStudio/Xenome_Simulations/sim1/sim1_exp_obs_gene_count.csv", row.names = FALSE)
+
+library("ggplot2")
 ```
 
 ### MA-plot
 ```{r}
-library("ggplot2")
-print(ggplot(as.data.frame(sim1_exp_obs), aes(x=baseMean, y=log2FoldChange)) + geom_point(size = 1.5, alpha = 1/5) + theme_classic() + geom_hline(yintercept=0, colour="blue3", linetype="dashed") + stat_smooth(se = FALSE, method = "loess", color = "red3") + theme_classic()+ scale_x_continuous(limits=c(0, 20)))
+print(ggplot(as.data.frame(sim1_exp_obs), aes(x=baseMean, y=log2FoldChange)) + ggtitle("[Sim1] 60mil reads, 0.50 G.F, deconvolution using Xenome (pancreatic sim.)") + geom_point(size = 1.5, alpha = 1/5) + theme_classic() + geom_hline(yintercept=0, colour="blue3", linetype="dashed") + stat_smooth(se = FALSE, method = "loess", color = "red3") + theme_classic()+ scale_x_continuous(limits=c(0, 20)))
 
 ```
+```{r}
+
+```
+
+

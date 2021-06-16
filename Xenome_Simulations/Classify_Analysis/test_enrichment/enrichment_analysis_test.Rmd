@@ -1,0 +1,115 @@
+---
+title: "Enrichment Trial"
+output: html_notebook
+---
+
+#Test for Enrichment Analysis
+
+Get rid of genes that are not expressed
+
+```{r}
+sim14_abg_exp_obs_gene_count<- read.csv("~/Xenograft_RStudio/Xenome_Simulations/Classify_Analysis/test_enrichment/sim14_abg_exp_obs_gene_count.csv")
+sim14_abg_exp_obs_gene_count_expressed <- sim14_abg_exp_obs_gene_count[sim14_abg_exp_obs_gene_count$expected_count>0, ]
+```
+gene argument
+```{r}
+
+overexpressed_ensembl<-filter(sim14_abg_exp_obs_gene_count_expressed, log2FoldChange>=2)$gene_id # gene argument in ensemble form
+```
+
+universe argument
+```{r}
+universe_ensembl<-sim14_abg_exp_obs_gene_count_expressed$gene_id
+head(universe_ensembl)
+```
+
+Enrichment Analysis: FINAL GOAL
+```{r}
+library(clusterProfiler)
+ego <- enrichGO(gene = overexpressed_ensembl,universe = universe_ensembl,
+                OrgDb = org.Hs.eg.db,
+                keyType = 'ENSEMBL', ont = "BP", pAdjustMethod ="BH",
+                pvalueCutoff = 1, qvalueCutoff = 0.1, 
+                readable = TRUE)
+head(ego)
+dotplot(ego)
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+**Code for translating ENSG code -> actual gene data**
+```{r}
+library(biomaRt)
+human = useEnsembl(biomart="ENSEMBL_MART_ENSEMBL",host="asia.ensembl.org", dataset="hsapiens_gene_ensembl", version="102")
+listAttributes(human)
+
+bm.annotations = getBM(attributes=c("ensembl_gene_id", "entrezgene_id", "gene_biotype", "hgnc_symbol", "description"), mart=human, filters="ensembl_gene_id", values=sim14_abg_exp_obs_gene_count$gene_id, uniqueRows=TRUE)
+
+str(bm.annotations)
+str(sim14_abg_exp_obs_gene_count)
+
+head(bm.annotations)
+head(sim14_abg_exp_obs_gene_count)
+tail(sim14_abg_exp_obs_gene_count)
+tail(bm.annotations)
+sim14_abg_exp_obs_gene_count$hgnc_symbol <- bm.annotations$hgnc_symbol
+
+
+#mouse = useEnsembl(biomart="ENSEMBL_MART_ENSEMBL",host="asia.ensembl.org", dataset="mmusculus_gene_ensembl", version="102")
+#bm.annotations = getBM(attributes=c("ensembl_gene_id", "entrezgene_id", "gene_biotype", "mgi_symbol", "description"), mart=mouse, filters="ensembl_gene_id", values=sim14_abg_exp_obs_gene_count$gene_id, uniqueRows=TRUE)
+
+```
+genome - coord (beginning and end of chromosome)
+ transcriptome - sonic hedgehog position 200-300 (beginning and end of gene)
+ 
+ in order to
+ how to run on genome bams .
+ rsem-calculate-expression
+
+Data Frame Manipulation
+```{r}
+library("dplyr")
+# to select only the names of those with significant over-expression (i.e. log2FC >= 2)
+sim14_abg_exp_obs_gene_count_expressed <- sim14_abg_exp_obs_gene_count[sim14_abg_exp_obs_gene_count$expected_count>0, ]
+bm.annotations_univ = getBM(attributes=c("ensembl_gene_id", "entrezgene_id", "gene_biotype", "hgnc_symbol"), mart=human, filters="ensembl_gene_id", values=sim14_abg_exp_obs_gene_count_expressed$gene_id, uniqueRows=TRUE)
+
+
+bm.annotations_univ2 = getBM(attributes=c("ensembl_gene_id", "hgnc_symbol"), mart=human, filters="ensembl_gene_id", values=sim14_abg_exp_obs_gene_count_expressed$gene_id, uniqueRows=TRUE)
+
+
+
+str(sim14_abg_exp_obs_gene_count_expressed)
+str(bm.annotations_univ)
+
+overexpressed<-filter(sim14_abg_exp_obs_gene_count_expressed, log2FoldChange>=2)
+
+bm.annotations_overexpressed = getBM(attributes=c("ensembl_gene_id", "entrezgene_id"), mart=human, filters="ensembl_gene_id", values=overexpressed$gene_id, uniqueRows=TRUE)
+
+
+str(sim14_abg_exp_obs_gene_count_expressed)
+
+sim14_abg_exp_obs_gene_count_expressed[sim14_abg_exp_obs_gene_count$log2FoldChange==6.337401, ]
+```
+
+
+
+ 
+ 
+
